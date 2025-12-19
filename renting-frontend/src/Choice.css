@@ -1,0 +1,37 @@
+/* Choice.css */
+.choice-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.choice-container .renter,
+.choice-container .seller {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+    transition: flex 0.5s ease, transform 0.5s ease;
+    cursor: pointer;
+}
+
+.choice-container .renter {
+    background: linear-gradient(135deg, #f7e8d0, #d1bfa7);
+    color: #333;
+}
+
+.choice-container .seller {
+    background: linear-gradient(135deg, #333, #555);
+    color: #fff;
+}
+
+.choice-container .renter:hover,
+.choice-container .seller:hover {
+    flex: 2;
+    transform: scale(1.05);
+}

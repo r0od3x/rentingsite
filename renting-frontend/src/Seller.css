@@ -1,0 +1,197 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600&display=swap");
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f4f3ef;
+    color: #222;
+    font-family: "Inter", sans-serif;
+}
+
+/* ================= HERO ================= */
+.hero-section {
+    height: 100vh;
+    background: url("https://images.unsplash.com/photo-1505691938895-1758d7feb511") center/cover;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.hero-content {
+    position: relative;
+    color: white;
+    text-align: center;
+    max-width: 700px;
+    animation: fadeUp 1.2s ease;
+}
+
+.hero-content h1 {
+    font-family: "Playfair Display";
+    font-size: 4.5rem;
+}
+
+.hero-content p {
+    opacity: 0.85;
+    margin: 20px 0 40px;
+}
+
+/* ================= BUTTONS ================= */
+.primary-btn {
+    background: #d4af37;
+    color: black;
+    padding: 14px 36px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    background: #c39a2d;
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid #aaa;
+    padding: 12px 30px;
+    cursor: pointer;
+}
+
+/* ================= ABOUT ================= */
+.about-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 100px 10%;
+    gap: 60px;
+    align-items: center;
+}
+
+.about-image {
+    height: 420px;
+    background: url("https://images.unsplash.com/photo-1493809842364-78817add7ffb") center/cover;
+    border-radius: 18px;
+}
+
+/* ================= STATS ================= */
+.stats-section {
+    display: flex;
+    justify-content: space-around;
+    padding: 80px 10%;
+    background: white;
+}
+
+.stat-card {
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 3rem;
+    margin: 0;
+    color: #d4af37;
+}
+
+/* ================= PROPERTIES ================= */
+.properties-section {
+    padding: 100px 10%;
+}
+
+.property-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 40px;
+}
+
+.property-card {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    transition: 0.3s;
+}
+
+.property-card:hover {
+    transform: translateY(-8px);
+}
+
+.property-image {
+    height: 220px;
+    background-size: cover;
+}
+
+.property-info {
+    padding: 20px;
+}
+
+.property-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.property-actions button {
+    flex: 1;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.property-actions .danger {
+    background: #e74c3c;
+    color: white;
+}
+
+/* ================= MODAL ================= */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-box {
+    background: white;
+    padding: 30px;
+    width: 440px;
+    border-radius: 18px;
+    animation: fadeUp 0.4s ease;
+}
+
+.modal-box input,
+.modal-box select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+/* ================= FOOTER ================= */
+.footer {
+    text-align: center;
+    padding: 40px;
+    background: #111;
+    color: #aaa;
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
