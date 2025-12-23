@@ -1,0 +1,380 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600&display=swap");
+
+/* RESET */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    background: #f8f6f2;
+    color: #1a1a1a;
+}
+
+/* ==================== PAGE LAYOUT ==================== */
+
+.admin-page {
+    min-height: 100vh;
+}
+
+/* ==================== NAVBAR ==================== */
+
+.admin-navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-navbar h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 1.8rem;
+    color: #1a1a1a;
+}
+
+.admin-navbar h1 span {
+    color: #c8a24d;
+}
+
+.admin-navbar nav {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-navbar nav button {
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: none;
+    background: transparent;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.admin-navbar nav button:hover,
+.admin-navbar nav button.active {
+    background: #1a1a1a;
+    color: white;
+}
+
+.admin-navbar .logout-btn {
+    background: linear-gradient(135deg, #c8a24d, #e7d18f);
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.admin-navbar .logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(200, 162, 77, 0.4);
+}
+
+/* ==================== HERO SECTION ==================== */
+
+.admin-hero {
+    padding: 140px 6% 60px;
+    background: linear-gradient(135deg, #f8f6f2 0%, #ebe7df 100%);
+    text-align: center;
+}
+
+.admin-hero h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.admin-hero p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* ==================== STATS SECTION ==================== */
+
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    padding: 60px 6%;
+    margin-top: -40px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 35px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+    transition: all 0.4s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h3 {
+    font-family: "Playfair Display", serif;
+    font-size: 3rem;
+    color: #1a1a1a;
+    margin-bottom: 5px;
+}
+
+.stat-card.gold h3 {
+    color: #c8a24d;
+}
+
+.stat-card.danger h3 {
+    color: #dc2626;
+}
+
+.stat-card.success h3 {
+    color: #059669;
+}
+
+.stat-card p {
+    color: #888;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* ==================== CONTENT SECTION ==================== */
+
+.admin-content {
+    padding: 60px 6%;
+    background: white;
+}
+
+.admin-content h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+/* ==================== TABLE ==================== */
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.admin-table thead {
+    background: #1a1a1a;
+    color: white;
+}
+
+.admin-table th {
+    padding: 18px 24px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.admin-table td {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.admin-table tbody tr {
+    transition: background 0.3s;
+}
+
+.admin-table tbody tr:hover {
+    background: #faf9f7;
+}
+
+.admin-table tbody tr.banned {
+    background: #fff8f8;
+}
+
+/* ==================== BADGES ==================== */
+
+.role-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-badge.admin {
+    background: linear-gradient(135deg, #c8a24d, #e7d18f);
+    color: #1a1a1a;
+}
+
+.role-badge.user {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.role-badge.seller {
+    background: #e8f4f8;
+    color: #0369a1;
+}
+
+.role-badge.renter {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.status-badge.banned {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.status-badge.available {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.status-badge.rented {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* ==================== ACTION BUTTONS ==================== */
+
+.action-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: all 0.3s;
+}
+
+.action-btn.ban {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.action-btn.ban:hover {
+    background: #f59e0b;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.action-btn.unban {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.action-btn.unban:hover {
+    background: #10b981;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.action-btn.delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.action-btn.delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ==================== LOADING ==================== */
+
+.admin-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-size: 1.2rem;
+    color: #888;
+    background: #f8f6f2;
+}
+
+/* ==================== EMPTY STATE ==================== */
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #888;
+}
+
+.empty-state h3 {
+    font-family: "Playfair Display", serif;
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 900px) {
+    .admin-hero h2 {
+        font-size: 2.2rem;
+    }
+
+    .stats-section {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-table {
+        font-size: 0.85rem;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 14px 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-navbar nav button {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        margin-bottom: 5px;
+    }
+}

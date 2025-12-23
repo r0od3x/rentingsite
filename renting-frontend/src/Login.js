@@ -9,23 +9,29 @@ function Login() {
 
   const login = async () => {
     try {
-      const res = await fetch("https://localhost:7179/api/auth/login", {
+      const res = await fetch("http://localhost:5062/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
-        const error = await res.text();
-        alert("Login failed: " + error);
+        const error = await res.json();
+        alert("Login failed: " + (error.message || "Unknown error"));
         return;
       }
 
       const data = await res.json();
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", data.email);
+      localStorage.setItem("role", data.role);
 
-      navigate("/choice");
+      // Redirect based on role
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/choice");
+      }
     } catch (err) {
       alert("Error: " + err.message);
     }

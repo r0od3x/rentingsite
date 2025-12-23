@@ -11,10 +11,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
     });
 
-// MongoDB
 builder.Services.AddSingleton<MongoDbService>();
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
@@ -23,7 +21,6 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
-// JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(jwtKey))
 {

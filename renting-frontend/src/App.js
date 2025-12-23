@@ -4,7 +4,8 @@ import Login from "./Login";
 import Register from "./Register";
 import Choice from "./Choice";
 import Seller from "./Seller";
-import Renter from "./Renter"; // ✅ IMPORT RENTER
+import Renter from "./Renter";
+import Admin from "./Admin";
 
 function App() {
   return (
@@ -18,7 +19,9 @@ function App() {
         <Route path="/choice" element={<Choice />} />
         {/* Main pages */}
         <Route path="/seller" element={<Seller />} />
-        <Route path="/renter" element={<Renter />} /> {/* ✅ REAL PAGE */}
+        <Route path="/renter" element={<Renter />} />
+        {/* Admin */}
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   );

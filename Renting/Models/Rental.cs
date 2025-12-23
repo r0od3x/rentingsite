@@ -9,7 +9,7 @@ namespace Renting.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [JsonPropertyName("propertyId")]
         public string PropertyId { get; set; }

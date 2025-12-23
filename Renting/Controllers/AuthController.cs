@@ -39,8 +39,16 @@ namespace Renting.Controllers
             if (user == null || user.Password != loginUser.Password)
                 return BadRequest(new { message = "Invalid credentials" });
 
-            var claims = new[] { new Claim(ClaimTypes.Email, user.Email) };
-            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["Jwt:Key"]));
+            // Check if user is banned
+            if (user.IsBanned)
+                return BadRequest(new { message = "Your account has been banned. Contact support." });
+
+            var claims = new[] { 
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("userId", user.Id ?? "")
+            };
+            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? ""));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -51,7 +59,11 @@ namespace Renting.Controllers
                 signingCredentials: creds
             );
 
-            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), email = user.Email });
+            return Ok(new { 
+                token = new JwtSecurityTokenHandler().WriteToken(token), 
+                email = user.Email,
+                role = user.Role
+            });
         }
     }
 }

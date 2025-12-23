@@ -11,6 +11,9 @@ function Seller() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
 
   const emptyForm = {
     Id: "",
@@ -29,7 +32,7 @@ function Seller() {
   ======================= */
   const fetchProperties = async () => {
     const res = await fetch(
-      `https://localhost:7179/api/property/seller/${email}`
+      `http://localhost:5062/api/property/seller/${email}`
     );
     const data = await res.json();
     setProperties(data);
@@ -62,8 +65,8 @@ function Seller() {
     e.preventDefault();
 
     const url = editing
-      ? `https://localhost:7179/api/property/${formData.Id}`
-      : "https://localhost:7179/api/property/add";
+      ? `http://localhost:5062/api/property/${formData.Id}`
+      : "http://localhost:5062/api/property/add";
 
     const method = editing ? "PUT" : "POST";
 
@@ -86,7 +89,7 @@ function Seller() {
 
   const deleteProperty = async (id) => {
     if (!window.confirm("Delete this property permanently?")) return;
-    await fetch(`https://localhost:7179/api/property/${id}`, {
+    await fetch(`http://localhost:5062/api/property/${id}`, {
       method: "DELETE",
     });
     fetchProperties();
@@ -107,8 +110,34 @@ function Seller() {
   /* =======================
      RENDER
   ======================= */
+const fetchNotifications = async () => {
+  const res = await fetch(
+    `http://localhost:5062/api/notifications/seller/${email}`
+  );
+  const data = await res.json();
+  setNotifications(data);
+};
+
+useEffect(() => {
+  fetchProperties();
+  fetchNotifications();
+}, []);
+
+
+
   return (
     <div className="seller-site">
+      {/* 🔔 Notification Bell */}
+      <div
+        className="notification-bell"
+        onClick={() => setShowNotifications(true)}
+      >
+        🔔
+        {notifications.length > 0 && (
+          <span className="notification-count">{notifications.length}</span>
+        )}
+      </div>
+
       {/* ================= HERO ================= */}
       <section className="hero-section">
         <div className="hero-overlay"></div>
@@ -118,6 +147,8 @@ function Seller() {
             A premium platform to manage, showcase and grow your rental
             portfolio.
           </p>
+         
+
           <button className="primary-btn" onClick={openAddForm}>
             Add New Property
           </button>
@@ -240,6 +271,35 @@ function Seller() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {showNotifications && (
+        <div
+          className="notification-overlay"
+          onClick={() => setShowNotifications(false)}
+        >
+          <div
+            className="notification-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="notification-header">
+              <h3>Notifications</h3>
+              <button onClick={() => setShowNotifications(false)}>✕</button>
+            </div>
+
+            <div className="notification-body">
+              {notifications.length === 0 ? (
+                <p className="empty">No notifications yet</p>
+              ) : (
+                notifications.map((n, index) => (
+                  <div className="notification-card" key={index}>
+                    <p>{n.text}</p>
+                    <span>{new Date(n.date).toLocaleString()}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

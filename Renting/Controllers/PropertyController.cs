@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Renting.Models;
 using Renting.Services;
-using System.Text.Json;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,7 +13,6 @@ public class PropertyController : ControllerBase
         _mongo = mongo;
     }
 
-    
     [HttpGet("seller/{email}")]
     public async Task<IActionResult> GetBySeller(string email)
     {
@@ -23,7 +21,6 @@ public class PropertyController : ControllerBase
         return Ok(myProps);
     }
 
-    
     [HttpPost("add")]
     public async Task<IActionResult> AddProperty([FromBody] Property property)
     {
@@ -75,6 +72,4 @@ public class PropertyController : ControllerBase
         var props = await _mongo.GetAllPropertiesAsync();
         return Ok(props);
     }
-
-
 }
