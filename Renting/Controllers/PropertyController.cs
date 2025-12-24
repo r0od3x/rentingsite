@@ -33,7 +33,7 @@ public class PropertyController : ControllerBase
 
         property.Id = null; 
         await _mongo.AddPropertyAsync(property);
-        return Ok(new { message = "Property added successfully" });
+        return Ok(property);    
     }
 
     [HttpPut("{id}")]

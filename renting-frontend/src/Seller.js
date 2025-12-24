@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./Seller.css";
+import { useNavigate } from "react-router-dom";
+
 
 function Seller() {
   const email = localStorage.getItem("email");
@@ -7,12 +9,18 @@ function Seller() {
   /* =======================
      STATE
   ======================= */
+  const navigate = useNavigate();
+
   const [properties, setProperties] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [propertyImages, setPropertyImages] = useState({});
+
+
 
 
   const emptyForm = {
@@ -51,6 +59,40 @@ function Seller() {
     setShowForm(true);
   };
 
+
+  const fetchAllImages = async (props) => {
+    if (!Array.isArray(props)) return; // 🛡️ safety
+
+    const map = {};
+
+    for (const p of props) {
+      if (!p?.Id) continue;
+
+      const res = await fetch(
+        `http://localhost:5062/api/image/property/${p.Id}`
+      );
+      const imgs = await res.json();
+      map[p.Id] = imgs;
+    }
+
+    setPropertyImages(map);
+  };
+
+
+ useEffect(() => {
+   fetchAllImages(properties);
+ }, [properties]);
+
+
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+
   const openEditForm = (property) => {
     setEditing(true);
     setFormData({ ...property });
@@ -83,9 +125,34 @@ function Seller() {
       return;
     }
 
+    // ✅ GET PROPERTY ID SAFELY
+    const propertyId = data.id || data._id || data.Id || formData.Id;
+
+    if (!propertyId) {
+      console.error("❌ PROPERTY ID NOT FOUND", data);
+      alert("Property saved but ID missing");
+      return;
+    }
+
+    // ✅ UPLOAD IMAGES
+    for (const file of imageFiles) {
+      const base64 = await fileToBase64(file);
+
+      await fetch("http://localhost:5062/api/image/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId: propertyId,
+          imageBase64: base64,
+        }),
+      });
+    }
+
+    setImageFiles([]);
     setShowForm(false);
     fetchProperties();
   };
+
 
   const deleteProperty = async (id) => {
     if (!window.confirm("Delete this property permanently?")) return;
@@ -110,23 +177,25 @@ function Seller() {
   /* =======================
      RENDER
   ======================= */
-const fetchNotifications = async () => {
-  const res = await fetch(
-    `http://localhost:5062/api/notifications/seller/${email}`
-  );
-  const data = await res.json();
-  setNotifications(data);
-};
+  const fetchNotifications = async () => {
+    const res = await fetch(
+      `http://localhost:5062/api/notifications/seller/${email}`
+    );
+    const data = await res.json();
+    setNotifications(data);
+  };
 
-useEffect(() => {
-  fetchProperties();
-  fetchNotifications();
-}, []);
-
-
+  useEffect(() => {
+    fetchProperties();
+    fetchNotifications();
+  }, []);
 
   return (
     <div className="seller-site">
+      <button className="go-renter-btn" onClick={() => navigate("/renter")}>
+        ← Go to Renter
+      </button>
+
       {/* 🔔 Notification Bell */}
       <div
         className="notification-bell"
@@ -147,7 +216,6 @@ useEffect(() => {
             A premium platform to manage, showcase and grow your rental
             portfolio.
           </p>
-         
 
           <button className="primary-btn" onClick={openAddForm}>
             Add New Property
@@ -193,9 +261,13 @@ useEffect(() => {
               <div
                 className="property-image"
                 style={{
-                  backgroundImage: `url(https://picsum.photos/600/400?random=${p.Id})`,
+                  backgroundImage: propertyImages[p.Id]?.length
+                    ? `url(${propertyImages[p.Id][0].imageBase64})`
+                    : "none",
                 }}
-              ></div>
+              >
+                {!propertyImages[p.Id]?.length && <span>No Image</span>}
+              </div>
 
               <div className="property-info">
                 <h3>{p.description}</h3>
@@ -227,6 +299,13 @@ useEffect(() => {
             <h2>{editing ? "Edit Property" : "Add Property"}</h2>
 
             <form onSubmit={submitForm}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setImageFiles([...e.target.files])}
+              />
+
               <input
                 name="description"
                 placeholder="Description"

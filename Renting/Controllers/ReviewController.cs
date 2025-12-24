@@ -2,76 +2,55 @@
 using Renting.Models;
 using Renting.Services;
 
-namespace Renting.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class ReviewController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ReviewController : ControllerBase
+    private readonly MongoDbService _mongo;
+
+    public ReviewController(MongoDbService mongo)
     {
-        private readonly MongoDbService _mongo;
+        _mongo = mongo;
+    }
 
-        public ReviewController(MongoDbService mongo)
-        {
-            _mongo = mongo;
-        }
+    // ✅ GET ALL REVIEWS (USED FOR BEST RATED)
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var reviews = await _mongo.GetAllReviewsAsync();
+        return Ok(reviews);
+    }
 
-        // ============================
-        // GET REVIEWS BY PROPERTY
-        // ============================
-        [HttpGet("property/{propertyId}")]
-        public async Task<IActionResult> GetByProperty(string propertyId)
-        {
-            if (string.IsNullOrWhiteSpace(propertyId))
-                return BadRequest(new { message = "Property ID is required" });
+    // ✅ GET REVIEWS FOR ONE PROPERTY
+    [HttpGet("property/{propertyId}")]
+    public async Task<IActionResult> GetByProperty(string propertyId)
+    {
+        var reviews = await _mongo.GetReviewsByPropertyAsync(propertyId);
+        return Ok(reviews);
+    }
 
-            var reviews = await _mongo.GetReviewsByPropertyAsync(propertyId);
-            return Ok(reviews);
-        }
+    // ✅ ADD REVIEW (ONLY IF RENTED)
+    [HttpPost("add")]
+    public async Task<IActionResult> AddReview([FromBody] Review review)
+    {
+        if (review == null)
+            return BadRequest(new { message = "Invalid review data" });
 
-        // ============================
-        // ADD REVIEW
-        // ============================
-        [HttpPost("add")]
-        public async Task<IActionResult> AddReview([FromBody] Review review)
-        {
-            // ---------- MODEL BINDING SAFETY ----------
-            if (!ModelState.IsValid || review == null)
-                return BadRequest(new { message = "Invalid review payload" });
+        if (review.Rating < 1 || review.Rating > 5)
+            return BadRequest(new { message = "Rating must be between 1 and 5" });
 
-            // ---------- REQUIRED FIELDS ----------
-            if (string.IsNullOrWhiteSpace(review.PropertyId))
-                return BadRequest(new { message = "PropertyId is required" });
+        var hasRented = await _mongo.HasUserRentedProperty(
+            review.RenterEmail,
+            review.PropertyId
+        );
 
-            if (string.IsNullOrWhiteSpace(review.RenterEmail))
-                return BadRequest(new { message = "RenterEmail is required" });
+        if (!hasRented)
+            return BadRequest(new { message = "You must rent before reviewing" });
 
-            if (string.IsNullOrWhiteSpace(review.Text))
-                return BadRequest(new { message = "Review text is required" });
+        review.Id = null;
+        review.CreatedAt = DateTime.UtcNow;
 
-            // ---------- RATING VALIDATION ----------
-            if (review.Rating < 0 || review.Rating > 5)
-                return BadRequest(new { message = "Rating must be between 0 and 5" });
-
-            // ---------- RENTAL CHECK ----------
-            var hasRented = await _mongo.HasUserRentedProperty(
-                review.RenterEmail,
-                review.PropertyId
-            );
-
-            if (!hasRented)
-                return BadRequest(new { message = "You must rent this property before reviewing" });
-
-            // ---------- SERVER-CONTROLLED FIELDS ----------
-            review.Id = null;
-            review.CreatedAt = DateTime.UtcNow;
-
-            // ---------- SAVE ----------
-            await _mongo.AddReviewAsync(review);
-
-            return Ok(new
-            {
-                message = "Review added successfully"
-            });
-        }
+        await _mongo.AddReviewAsync(review);
+        return Ok(new { message = "Review added successfully" });
     }
 }

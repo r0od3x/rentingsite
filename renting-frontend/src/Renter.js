@@ -34,12 +34,13 @@ function Renter() {
   const [reviewText, setReviewText] = useState("");
 
   const [reviews, setReviews] = useState([]);
-const [canReview, setCanReview] = useState(false);
-const [showReviews, setShowReviews] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
 
-
-  
-
+  const [propertyImages, setPropertyImages] = useState({});
+  const [selectedPropertyReviews, setSelectedPropertyReviews] = useState([]);
+  const [showReviewsPopup, setShowReviewsPopup] = useState(false);
+  const [allReviews, setAllReviews] = useState([]);
 
   const [rentForm, setRentForm] = useState({
     startTime: "",
@@ -53,6 +54,13 @@ const [showReviews, setShowReviews] = useState(false);
 
   useEffect(() => {
     fetchProperties();
+  }, []);
+
+  useEffect(() => {
+    fetch("http://localhost:5062/api/review")
+      .then((res) => res.json())
+      .then((data) => setAllReviews(data))
+      .catch(() => setAllReviews([]));
   }, []);
 
   const fetchProperties = async () => {
@@ -75,23 +83,56 @@ const [showReviews, setShowReviews] = useState(false);
     }
   };
 
+  useEffect(() => {
+    const fetchAllReviews = async () => {
+      try {
+        const res = await fetch("http://localhost:5062/api/review");
+        const data = await res.json();
+        setAllReviews(data);
+      } catch (err) {
+        console.error("Failed to fetch reviews", err);
+      }
+    };
+
+    fetchAllReviews();
+  }, []);
+
+  const fetchAllImages = async (props) => {
+    if (!Array.isArray(props)) return;
+
+    const map = {};
+
+    for (const p of props) {
+      const res = await fetch(
+        `http://localhost:5062/api/image/property/${p.Id}`
+      );
+      const imgs = await res.json();
+      map[p.Id] = imgs;
+    }
+
+    setPropertyImages(map);
+  };
+
+  useEffect(() => {
+    fetchAllImages(properties);
+  }, [properties]);
 
   /* ===================== SEARCH ===================== */
 
-useEffect(() => {
-  const result = properties.filter((p) => {
-    const matchesSearch = p.description
-      ?.toLowerCase()
-      .includes(search.toLowerCase());
+  useEffect(() => {
+    const result = properties.filter((p) => {
+      const matchesSearch = p.description
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
 
-    const matchesPrice =
-      p.pricePerNight >= priceRange[0] && p.pricePerNight <= priceRange[1];
+      const matchesPrice =
+        p.pricePerNight >= priceRange[0] && p.pricePerNight <= priceRange[1];
 
-    return matchesSearch && matchesPrice;
-  });
+      return matchesSearch && matchesPrice;
+    });
 
-  setFilteredProperties(result);
-}, [search, priceRange, properties]);
+    setFilteredProperties(result);
+  }, [search, priceRange, properties]);
 
   /* ===================== PRICE CALC ===================== */
 
@@ -135,7 +176,6 @@ useEffect(() => {
     setCanReview(hasRented);
   };
 
-
   const closeDetails = () => {
     setShowDetailsModal(false);
     setSelectedProperty(null);
@@ -149,7 +189,21 @@ useEffect(() => {
   const closeRent = () => {
     setShowRentModal(false);
   };
+  const openReviewsPopup = async () => {
+    if (!selectedProperty) return;
 
+    const propertyId =
+      selectedProperty.Id || selectedProperty._id || selectedProperty.id;
+
+    const res = await fetch(
+      `http://localhost:5062/api/review/property/${propertyId}`
+    );
+
+    const data = await res.json();
+    console.log("Reviews fetched:", data);
+    setSelectedPropertyReviews(data);
+    setShowReviewsPopup(true);
+  };
 
   const submitReview = async () => {
     if (!rating || rating < 0 || rating > 5) {
@@ -207,6 +261,27 @@ useEffect(() => {
     }
   };
 
+  const bestRatedProperties = properties
+    .map((p) => {
+      const reviewsForProperty = allReviews.filter(
+        (r) => r.PropertyId === p.Id
+      );
+
+      if (reviewsForProperty.length === 0) return null;
+
+      const avgRating =
+        reviewsForProperty.reduce((sum, r) => sum + r.Rating, 0) /
+        reviewsForProperty.length;
+
+      return {
+        ...p,
+        avgRating,
+        reviewCount: reviewsForProperty.length,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.avgRating - a.avgRating)
+    .slice(0, 6); // TOP 6
 
   /* ===================== RENT SUBMIT (DEBUG) ===================== */
 
@@ -299,7 +374,6 @@ useEffect(() => {
       alert("Server error");
     }
   };
-
 
   /* ===================== LOADING ===================== */
 
@@ -398,6 +472,114 @@ useEffect(() => {
         </div>
       </section>
 
+      {/* ============ BENTO SECTION ============ */}
+      <section className="bento-section">
+        <div className="bento-grid">
+          <div className="bento-card primary">
+            <h3>🏡 Handpicked Stays</h3>
+            <p>Carefully curated properties for comfort and quality.</p>
+          </div>
+
+          <div className="bento-card image-card">
+            <img src="https://picsum.photos/600/400?house" alt="Luxury stay" />
+          </div>
+
+          <div className="bento-card accent">
+            <h3>⭐ Trusted Reviews</h3>
+            <p>Only verified renters can leave reviews.</p>
+          </div>
+
+          <div className="bento-card glass">
+            <h3>⚡ Fast Booking</h3>
+            <p>Rent in seconds with real-time price calculation.</p>
+          </div>
+
+          <div className="bento-card gradient">
+            <h3>🌍 Anywhere</h3>
+            <p>Urban apartments, houses, and premium stays.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ BEST RATED CAROUSEL ============ */}
+      <section className="best-rated-section">
+        <h2>🔥 Best Rated Stays</h2>
+
+        {bestRatedProperties.length === 0 ? (
+          <p className="empty">No rated properties yet</p>
+        ) : (
+          <div className="carousel">
+            <div className="carousel-track">
+              {/* FIRST COPY */}
+              {bestRatedProperties.map((p) => (
+                <div
+                  key={`a-${p.Id}`}
+                  className="carousel-card"
+                  onClick={() => openDetails(p)}
+                >
+                  <div
+                    className="carousel-image"
+                    style={{
+                      backgroundImage: propertyImages[p.Id]?.length
+                        ? `url(${propertyImages[p.Id][0].imageBase64})`
+                        : "none",
+                    }}
+                  />
+
+                  <div className="carousel-info">
+                    <h4>{p.description}</h4>
+
+                    <div className="stars">
+                      {"★".repeat(Math.round(p.avgRating))}
+                      {"☆".repeat(5 - Math.round(p.avgRating))}
+                    </div>
+
+                    <small>
+                      {p.reviewCount} review{p.reviewCount > 1 ? "s" : ""}
+                    </small>
+
+                    <span>${p.pricePerNight} / night</span>
+                  </div>
+                </div>
+              ))}
+
+              {/* SECOND COPY (FOR SEAMLESS LOOP) */}
+              {bestRatedProperties.map((p) => (
+                <div
+                  key={`b-${p.Id}`}
+                  className="carousel-card"
+                  onClick={() => openDetails(p)}
+                >
+                  <div
+                    className="carousel-image"
+                    style={{
+                      backgroundImage: propertyImages[p.Id]?.length
+                        ? `url(${propertyImages[p.Id][0].imageBase64})`
+                        : "none",
+                    }}
+                  />
+
+                  <div className="carousel-info">
+                    <h4>{p.description}</h4>
+
+                    <div className="stars">
+                      {"★".repeat(Math.round(p.avgRating))}
+                      {"☆".repeat(5 - Math.round(p.avgRating))}
+                    </div>
+
+                    <small>
+                      {p.reviewCount} review{p.reviewCount > 1 ? "s" : ""}
+                    </small>
+
+                    <span>${p.pricePerNight} / night</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* ============ GRID ============ */}
       <section className="renter-content">
         <div className="property-grid">
@@ -407,12 +589,17 @@ useEffect(() => {
               key={p.id || p._id}
               onClick={() => openDetails(p)}
             >
-              <div className="image-wrapper">
-                <img
-                  src={`https://picsum.photos/600/400?random=${p.id || p._id}`}
-                  alt=""
-                />
+              <div
+                className="image-wrapper"
+                style={{
+                  backgroundImage: propertyImages[p.Id]?.length
+                    ? `url(${propertyImages[p.Id][0].imageBase64})`
+                    : "none",
+                }}
+              >
+                {!propertyImages[p.Id]?.length && <span>No Image</span>}
               </div>
+
               <div className="card-info">
                 <h3>{p.description}</h3>
                 <p className="type">{p.propertyType}</p>
@@ -428,12 +615,21 @@ useEffect(() => {
       {showDetailsModal && selectedProperty && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <img
-              src={`https://picsum.photos/900/500?random=${
-                selectedProperty.id || selectedProperty._id
-              }`}
-              alt=""
-            />
+            <div className="image-gallery">
+              {propertyImages[selectedProperty.Id]?.length ? (
+                propertyImages[selectedProperty.Id].map((img, i) => (
+                  <img
+                    key={i}
+                    src={img.imageBase64}
+                    alt="property"
+                    className="gallery-img"
+                  />
+                ))
+              ) : (
+                <p className="empty">No images available</p>
+              )}
+            </div>
+
             <div className="modal-details">
               <h2>{selectedProperty.description}</h2>
               <p>Type: {selectedProperty.propertyType}</p>
@@ -444,38 +640,61 @@ useEffect(() => {
                 Rent this property
               </button>
 
-              <button
-                className="secondary-btn"
-                onClick={() => setShowReviews(!showReviews)}
-              >
+              <button className="review-btn" onClick={openReviewsPopup}>
                 View Reviews
               </button>
-              {showReviews && (
-                <div className="reviews-section inside-modal">
-                  <h3>Reviews</h3>
 
-                  {reviews.length === 0 ? (
-                    <p>No reviews yet.</p>
-                  ) : (
-                    reviews.map((r) => (
-                      <div className="review-card" key={r.id || r._id}>
-                        <div className="stars">
-                          {"★".repeat(r.rating)}
-                          {"☆".repeat(5 - r.rating)}
-                        </div>
-                        <p>{r.text}</p>
-                      </div>
-                    ))
-                  )}
+              {showReviewsPopup && (
+                <div
+                  className="review-overlay"
+                  onClick={() => setShowReviewsPopup(false)}
+                >
+                  <div
+                    className="review-popup"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="review-header">
+                      <h3>Property Reviews</h3>
 
-                  {canReview && (
-                    <button
-                      className="primary-btn"
-                      onClick={() => setReviewRental(true)}
-                    >
-                      Add Review
-                    </button>
-                  )}
+                      {canReview && (
+                        <button
+                          className="add-review-btn"
+                          onClick={() => {
+                            setShowReviewsPopup(false);
+                            setReviewRental(selectedProperty);
+                          }}
+                        >
+                          + Add Review
+                        </button>
+                      )}
+
+                      <button onClick={() => setShowReviewsPopup(false)}>
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="review-body">
+                      {selectedPropertyReviews.length === 0 ? (
+                        <p className="empty">No reviews yet</p>
+                      ) : (
+                        selectedPropertyReviews.map((r) => (
+                          <div className="review-card" key={r.Id}>
+                            <div className="stars">
+                              {"★".repeat(r.Rating)}
+                              {"☆".repeat(5 - r.Rating)}
+                            </div>
+                            <p>{r.Text}</p>
+                            <span>
+                              {r.CreatedAt
+                                ? new Date(r.CreatedAt).toLocaleDateString()
+                                : "Just now"}
+                            </span>
+                            <small>By: {r.RenterEmail}</small>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 

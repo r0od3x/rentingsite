@@ -10,6 +10,8 @@ namespace Renting.Services
         private readonly IMongoCollection<Rental> _rentals;
         private readonly IMongoCollection<Notification> _notifications;
         private readonly IMongoCollection<Review> _reviews;
+        private readonly IMongoCollection<PropertyImage> _propertyImages;
+
 
 
         public MongoDbService(IConfiguration config)
@@ -21,6 +23,8 @@ namespace Renting.Services
             _rentals = database.GetCollection<Rental>("Rentals");
             _notifications = database.GetCollection<Notification>("Notifications");
             _reviews = database.GetCollection<Review>("Reviews");
+            _propertyImages = database.GetCollection<PropertyImage>("PropertyImages");
+
 
 
 
@@ -180,6 +184,24 @@ namespace Renting.Services
                 r.PropertyId == propertyId
             ).AnyAsync();
         }
+
+        public async Task AddPropertyImageAsync(PropertyImage image)
+        {
+            await _propertyImages.InsertOneAsync(image);
+        }
+
+        public async Task<List<PropertyImage>> GetImagesByPropertyAsync(string propertyId)
+        {
+            return await _propertyImages
+                .Find(i => i.PropertyId == propertyId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Review>> GetAllReviewsAsync()
+        {
+            return await _reviews.Find(_ => true).ToListAsync();
+        }
+
 
 
     }
