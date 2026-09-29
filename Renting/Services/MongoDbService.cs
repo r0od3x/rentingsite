@@ -1,4 +1,4 @@
-﻿using MongoDB.Driver;
+using MongoDB.Driver;
 using Renting.Models;
 
 namespace Renting.Services
@@ -14,8 +14,11 @@ namespace Renting.Services
 
 
 
+        private readonly IConfiguration _config;
+
         public MongoDbService(IConfiguration config)
         {
+            _config = config;
             var client = new MongoClient(config["MongoDb:ConnectionString"]);
             var database = client.GetDatabase(config["MongoDb:Database"]);
             _users = database.GetCollection<User>("Users");
@@ -49,13 +52,18 @@ namespace Renting.Services
 
         private async Task SeedAdminAsync()
         {
-            var admin = await _users.Find(u => u.Email == "admin@renting.com").FirstOrDefaultAsync();
+            var adminEmail = _config["Admin:Email"];
+            var adminPassword = _config["Admin:Password"];
+            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+                return;
+
+            var admin = await _users.Find(u => u.Email == adminEmail).FirstOrDefaultAsync();
             if (admin == null)
             {
                 await _users.InsertOneAsync(new User
                 {
-                    Email = "admin@renting.com",
-                    Password = "admin123",
+                    Email = adminEmail,
+                    Password = BCrypt.Net.BCrypt.HashPassword(adminPassword),
                     Role = "admin",
                     IsBanned = false,
                     CreatedAt = DateTime.UtcNow
@@ -76,6 +84,12 @@ namespace Renting.Services
         public async Task<List<User>> GetAllUsersAsync()
         {
             return await _users.Find(_ => true).ToListAsync();
+        }
+
+        public async Task UpdateUserPasswordAsync(string id, string passwordHash)
+        {
+            var update = Builders<User>.Update.Set(u => u.Password, passwordHash);
+            await _users.UpdateOneAsync(u => u.Id == id, update);
         }
 
         public async Task<User> GetUserByIdAsync(string id)

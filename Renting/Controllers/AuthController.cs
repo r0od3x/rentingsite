@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Renting.Models;
 using Renting.Services;
@@ -24,11 +24,24 @@ namespace Renting.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
+            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Password))
+                return BadRequest(new { message = "Email and password are required" });
+
             var existing = await _mongo.GetUserByEmailAsync(user.Email);
             if (existing != null)
                 return BadRequest(new { message = "Email already exists" });
 
-            await _mongo.AddUserAsync(user);
+            // Never trust role/ban flags coming from the client.
+            var newUser = new User
+            {
+                Email = user.Email.Trim(),
+                Password = BCrypt.Net.BCrypt.HashPassword(user.Password),
+                Role = "user",
+                IsBanned = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _mongo.AddUserAsync(newUser);
             return Ok(new { message = "User registered successfully" });
         }
 
@@ -36,7 +49,7 @@ namespace Renting.Controllers
         public async Task<IActionResult> Login([FromBody] User loginUser)
         {
             var user = await _mongo.GetUserByEmailAsync(loginUser.Email);
-            if (user == null || user.Password != loginUser.Password)
+            if (user == null || !await VerifyPasswordAsync(user, loginUser.Password))
                 return BadRequest(new { message = "Invalid credentials" });
 
             // Check if user is banned
@@ -55,7 +68,7 @@ namespace Renting.Controllers
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(_config.GetValue("Jwt:ExpiryHours", 1)),
                 signingCredentials: creds
             );
 
@@ -64,6 +77,23 @@ namespace Renting.Controllers
                 email = user.Email,
                 role = user.Role
             });
+        }
+
+        private async Task<bool> VerifyPasswordAsync(User user, string password)
+        {
+            if (string.IsNullOrEmpty(password))
+                return false;
+
+            if (user.Password.StartsWith("$2"))
+                return BCrypt.Net.BCrypt.Verify(password, user.Password);
+
+            // Legacy account stored in plain text: accept once, then upgrade to a hash.
+            if (user.Password != password)
+                return false;
+
+            if (user.Id != null)
+                await _mongo.UpdateUserPasswordAsync(user.Id, BCrypt.Net.BCrypt.HashPassword(password));
+            return true;
         }
     }
 }

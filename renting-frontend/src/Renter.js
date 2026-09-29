@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Renter.css";
+import { API_URL } from "./config";
 
 /*
 =========================================================
@@ -57,7 +58,7 @@ function Renter() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:5062/api/review")
+    fetch(`${API_URL}/api/review`)
       .then((res) => res.json())
       .then((data) => setAllReviews(data))
       .catch(() => setAllReviews([]));
@@ -65,7 +66,7 @@ function Renter() {
 
   const fetchProperties = async () => {
     try {
-      const res = await fetch("http://localhost:5062/api/property");
+      const res = await fetch(`${API_URL}/api/property`);
       const data = await res.json();
 
       console.log("📦 PROPERTIES FROM BACKEND:", data);
@@ -86,7 +87,7 @@ function Renter() {
   useEffect(() => {
     const fetchAllReviews = async () => {
       try {
-        const res = await fetch("http://localhost:5062/api/review");
+        const res = await fetch(`${API_URL}/api/review`);
         const data = await res.json();
         setAllReviews(data);
       } catch (err) {
@@ -104,7 +105,7 @@ function Renter() {
 
     for (const p of props) {
       const res = await fetch(
-        `http://localhost:5062/api/image/property/${p.Id}`
+        `${API_URL}/api/image/property/${p.Id}`
       );
       const imgs = await res.json();
       map[p.Id] = imgs;
@@ -160,14 +161,14 @@ function Renter() {
 
     // Fetch reviews
     const res = await fetch(
-      `http://localhost:5062/api/review/property/${propertyId}`
+      `${API_URL}/api/review/property/${propertyId}`
     );
     const data = await res.json();
     setReviews(data);
 
     // Check if user can review
     const rentCheck = await fetch(
-      `http://localhost:5062/api/rental/renter/${renterEmail}`
+      `${API_URL}/api/rental/renter/${renterEmail}`
     );
     const rentals = await rentCheck.json();
 
@@ -196,7 +197,7 @@ function Renter() {
       selectedProperty.Id || selectedProperty._id || selectedProperty.id;
 
     const res = await fetch(
-      `http://localhost:5062/api/review/property/${propertyId}`
+      `${API_URL}/api/review/property/${propertyId}`
     );
 
     const data = await res.json();
@@ -226,7 +227,7 @@ function Renter() {
 
     try {
       // ================= POST REVIEW =================
-      const res = await fetch("http://localhost:5062/api/review/add", {
+      const res = await fetch(`${API_URL}/api/review/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -246,7 +247,7 @@ function Renter() {
 
       // ================= REFRESH REVIEWS =================
       const res2 = await fetch(
-        `http://localhost:5062/api/review/property/${propertyId}`
+        `${API_URL}/api/review/property/${propertyId}`
       );
       const updatedReviews = await res2.json();
       setReviews(updatedReviews);
@@ -338,7 +339,7 @@ function Renter() {
 
     // ===================== API CALL =====================
     try {
-      const res = await fetch("http://localhost:5062/api/rental/rent", {
+      const res = await fetch(`${API_URL}/api/rental/rent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./Seller.css";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "./config";
 
 
 function Seller() {
@@ -40,7 +41,7 @@ function Seller() {
   ======================= */
   const fetchProperties = async () => {
     const res = await fetch(
-      `http://localhost:5062/api/property/seller/${email}`
+      `${API_URL}/api/property/seller/${email}`
     );
     const data = await res.json();
     setProperties(data);
@@ -69,7 +70,7 @@ function Seller() {
       if (!p?.Id) continue;
 
       const res = await fetch(
-        `http://localhost:5062/api/image/property/${p.Id}`
+        `${API_URL}/api/image/property/${p.Id}`
       );
       const imgs = await res.json();
       map[p.Id] = imgs;
@@ -107,8 +108,8 @@ function Seller() {
     e.preventDefault();
 
     const url = editing
-      ? `http://localhost:5062/api/property/${formData.Id}`
-      : "http://localhost:5062/api/property/add";
+      ? `${API_URL}/api/property/${formData.Id}`
+      : `${API_URL}/api/property/add`;
 
     const method = editing ? "PUT" : "POST";
 
@@ -138,7 +139,7 @@ function Seller() {
     for (const file of imageFiles) {
       const base64 = await fileToBase64(file);
 
-      await fetch("http://localhost:5062/api/image/upload", {
+      await fetch(`${API_URL}/api/image/upload`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -156,7 +157,7 @@ function Seller() {
 
   const deleteProperty = async (id) => {
     if (!window.confirm("Delete this property permanently?")) return;
-    await fetch(`http://localhost:5062/api/property/${id}`, {
+    await fetch(`${API_URL}/api/property/${id}`, {
       method: "DELETE",
     });
     fetchProperties();
@@ -179,7 +180,7 @@ function Seller() {
   ======================= */
   const fetchNotifications = async () => {
     const res = await fetch(
-      `http://localhost:5062/api/notifications/seller/${email}`
+      `${API_URL}/api/notifications/seller/${email}`
     );
     const data = await res.json();
     setNotifications(data);

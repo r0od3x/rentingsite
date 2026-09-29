@@ -13,18 +13,23 @@ builder.Services.AddControllers()
 
 builder.Services.AddSingleton<MongoDbService>();
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
-        policy => policy.WithOrigins("http://localhost:3000")
+        policy => policy.WithOrigins(allowedOrigins)
                         .AllowAnyHeader()
                         .AllowAnyMethod());
 });
 
 var jwtKey = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrEmpty(jwtKey))
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
 {
-    throw new Exception("JWT Key missing");
+    throw new InvalidOperationException(
+        "Jwt:Key is missing or shorter than 32 characters. " +
+        "Set it with `dotnet user-secrets set \"Jwt:Key\" \"<secret>\"` or the Jwt__Key environment variable.");
 }
 
 var key = Encoding.ASCII.GetBytes(jwtKey);

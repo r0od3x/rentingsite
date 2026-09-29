@@ -24,3 +24,6 @@ yarn-error.log*
 
 
 *.csproj.user
+
+# local env
+.env

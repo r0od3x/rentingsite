@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Admin.css";
+import { API_URL } from "./config";
 
 function Admin() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ function Admin() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("http://localhost:5062/api/admin/stats", {
+      const res = await fetch(`${API_URL}/api/admin/stats`, {
         headers: authHeaders,
       });
       const data = await res.json();
@@ -53,7 +54,7 @@ function Admin() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5062/api/admin/users", {
+      const res = await fetch(`${API_URL}/api/admin/users`, {
         headers: authHeaders,
       });
       const data = await res.json();
@@ -65,7 +66,7 @@ function Admin() {
 
   const fetchProperties = async () => {
     try {
-      const res = await fetch("http://localhost:5062/api/admin/properties", {
+      const res = await fetch(`${API_URL}/api/admin/properties`, {
         headers: authHeaders,
       });
       const data = await res.json();
@@ -77,7 +78,7 @@ function Admin() {
 
   const fetchRentals = async () => {
     try {
-      const res = await fetch("http://localhost:5062/api/admin/rentals", {
+      const res = await fetch(`${API_URL}/api/admin/rentals`, {
         headers: authHeaders,
       });
       const data = await res.json();
@@ -92,7 +93,7 @@ function Admin() {
   const banUser = async (id) => {
     if (!window.confirm("Ban this user?")) return;
     try {
-      const res = await fetch(`http://localhost:5062/api/admin/users/${id}/ban`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${id}/ban`, {
         method: "PUT",
         headers: authHeaders,
       });
@@ -107,7 +108,7 @@ function Admin() {
 
   const unbanUser = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5062/api/admin/users/${id}/unban`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${id}/unban`, {
         method: "PUT",
         headers: authHeaders,
       });
@@ -123,7 +124,7 @@ function Admin() {
   const deleteUser = async (id) => {
     if (!window.confirm("Delete this user permanently?")) return;
     try {
-      const res = await fetch(`http://localhost:5062/api/admin/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
         method: "DELETE",
         headers: authHeaders,
       });
@@ -141,7 +142,7 @@ function Admin() {
   const deleteProperty = async (id) => {
     if (!window.confirm("Delete this property?")) return;
     try {
-      const res = await fetch(`http://localhost:5062/api/admin/properties/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/properties/${id}`, {
         method: "DELETE",
         headers: authHeaders,
       });
